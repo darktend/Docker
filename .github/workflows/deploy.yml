@@ -43,7 +43,7 @@ jobs:
       # Push Docker image to ECR
       - name: Push Docker image to ECR
         run: |
-          docker push ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
+          docker push public.ecr.aws/b7r1g3n1/docker:latest
 
       # Deploy to EC2
       - name: Deploy to EC2
