@@ -1,0 +1,53 @@
+name: Deploy to AWS ECR
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up AWS CLI
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{secrets.REGION}}
+
+      # Log in to Amazon ECR
+      - name: Log in to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{secrets.REGION}}| docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY }}
+
+      # Build Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t my-repo:latest .
+
+      # Tag Docker image
+      - name: Tag Docker image
+        run: |
+          docker tag my-repo:latest ${{ secrets.ECR_REPOSITORY }}/my-repo:latest
+
+      # Push Docker image to ECR
+      - name: Push Docker image to ECR
+        run: |
+          docker push ${{ secrets.ECR_REPOSITORY }}/my-repo:latest
+
+      # Deploy to EC2 server (optional)
+      - name: Deploy to EC2
+        run: |
+          ssh -i ${{ secrets.SSH_PRIVATE_KEY }} user@${{ secrets.EC2_HOST }} '
+            docker pull ${{ secrets.ECR_REPOSITORY }}/my-repo:latest &&
+            docker stop my-container || true &&
+            docker rm my-container || true &&
+            docker run -d --name my-container ${{ secrets.ECR_REPOSITORY }}/my-repo:latest
+          '

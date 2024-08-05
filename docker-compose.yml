@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   web:
-    build: .
+    image: ${ECR_REPOSITORY}/my-repo:latest
     ports:
       - "80:80"
     depends_on:
