@@ -29,11 +29,13 @@ jobs:
       - name: Build and push Docker image
         run: |
           IMAGE_TAG=${{ github.sha }}
-          docker build -t ${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG .
-          docker tag ${{ secrets.ECR_REPOSITORY }}/docker:$IMAGE_TAG ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG
+          REPO_NAME=${{ secrets.ECR_REPOSITORY }}
+          
+          # Build the Docker image
+          docker build -t docker:$IMAGE_TAG .
+          
+          # Tag the image for the ECR repository
+          docker tag docker:$IMAGE_TAG ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG
+          
+          # Push the image to the ECR repository
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG
-
-      - name: Deploy to EC2
-        run: |
-          IMAGE_TAG=${{ github.sha }}
-          ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ec2-user@${{ secrets.EC2_HOST }} "docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:$IMAGE_TAG && docker-compose up -d"
