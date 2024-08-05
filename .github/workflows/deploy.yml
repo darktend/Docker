@@ -36,9 +36,7 @@ jobs:
           docker build -t ${{ secrets.ECR_REPOSITORY }}:latest .
 
       # Tag Docker image
-      - name: Tag Docker image
-        run: |
-          docker tag docker:latest public.ecr.aws/b7r1g3n1/docker
+
 
       # Push Docker image to ECR
       - name: Push Docker image to ECR
