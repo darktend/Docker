@@ -35,19 +35,19 @@ jobs:
       # Tag Docker image
       - name: Tag Docker image
         run: |
-          docker tag my-repo:latest ${{ secrets.ECR_REPOSITORY }}
+          docker tag my-repo:latest ${{ secrets.ECR_REPOSITORY }}/docker:latest
 
       # Push Docker image to ECR
       - name: Push Docker image to ECR
         run: |
-          docker push ${{ secrets.ECR_REPOSITORY }}
+          docker push ${{ secrets.ECR_REPOSITORY }}/docker:latest
 
       # Deploy to EC2 server (optional)
       - name: Deploy to EC2
         run: |
           ssh -i ${{ secrets.SSH_PRIVATE_KEY }} user@${{ secrets.EC2_HOST }} '
-            docker pull ${{ secrets.ECR_REPOSITORY }}/my-repo:latest &&
+            docker pull ${{ secrets.ECR_REPOSITORY }}/docker:latest &&
             docker stop my-container || true &&
             docker rm my-container || true &&
-            docker run -d --name my-container ${{ secrets.ECR_REPOSITORY }}/my-repo:latest
+            docker run -d --name my-container ${{ secrets.ECR_REPOSITORY }}/docker:latest
           '
