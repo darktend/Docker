@@ -25,17 +25,17 @@ jobs:
       # Log in to Amazon ECR
       - name: Log in to Amazon ECR
         run: |
-          aws ecr get-login-password --region ${{secrets.REGION}}| docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY }}
+          aws ecr get-login-password --region ${{ secrets.REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY }}
 
       # Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t my-repo:latest .
+          docker build -t docker:latest .
 
       # Tag Docker image
       - name: Tag Docker image
         run: |
-          docker tag my-repo:latest ${{ secrets.ECR_REPOSITORY }}
+          docker tag docker:latest ${{ secrets.ECR_REPOSITORY }}
 
       # Push Docker image to ECR
       - name: Push Docker image to ECR
