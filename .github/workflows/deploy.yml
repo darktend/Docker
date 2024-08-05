@@ -41,7 +41,7 @@ jobs:
       # Push Docker image to ECR
       - name: Push Docker image to ECR
         run: |
-          docker push ${{ secrets.ECR_REPOSITORY }}/docker:latest
+          docker push ${{ secrets.ECR_REPOSITORY }}/docker
 
       # Deploy to EC2
       - name: Deploy to EC2
