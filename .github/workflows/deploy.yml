@@ -64,8 +64,6 @@ jobs:
             # Update the Docker Compose file with the new image tag
             sed -i 's|image: .*|image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG|g' docker-compose.yml
           
-            # Stop the Docker Compose stack
-            docker-compose down
             # Start the Docker Compose stack
             docker-compose up -d
           EOF
