@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   web:
-    image: ${ECR_REPOSITORY}/docker
+    image: ${ECR_REPOSITORY}
     ports:
       - "80:80"
     depends_on:
