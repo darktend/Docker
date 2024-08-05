@@ -63,7 +63,7 @@ create_table()
 def index():
     conn = create_connection()
     if not conn:
-        return "Errors Unable to connect to the database", 500
+        return "Error: Unable to connect to the database", 500
 
     if request.method == "POST":
         content = request.form["content"]
@@ -72,17 +72,17 @@ def index():
             conn.commit()
         conn.close()
         return redirect(url_for('index'))
-    
+
     with conn.cursor() as cur:
         cur.execute("SELECT * FROM entries")
         entries = cur.fetchall()
-    
+
     conn.close()
 
     html = """
     <!doctype html>
     <title>Flask PostgreSQL App</title>
-    <h1>Enter data!!</h1>
+    <h1>Enter data</h1>
     <form method=post>
       <input type=text name=content>
       <input type=submit value=Submit>
