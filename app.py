@@ -8,57 +8,6 @@ import os
 
 app = Flask(__name__)
 
-# Database connection details
-DB_NAME = os.getenv("DB_NAME", "mydb")
-DB_USER = os.getenv("DB_USER", "user")
-DB_PASS = os.getenv("DB_PASS", "password")
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = os.getenv("DB_PORT", "5432")
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-
-def create_connection():
-    retry_count = 5
-    while retry_count > 0:
-        try:
-            conn = psycopg2.connect(
-                dbname=DB_NAME,
-                user=DB_USER,
-                password=DB_PASS,
-                host=DB_HOST,
-                port=DB_PORT
-            )
-            return conn
-        except OperationalError as e:
-            logging.warning(f"Database connection failed: {e}")
-            retry_count -= 1
-            time.sleep(2)
-    logging.error("Failed to connect to the database after multiple attempts")
-    return None
-
-def create_table():
-    conn = create_connection()
-    if conn:
-        try:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS entries (
-                        id SERIAL PRIMARY KEY,
-                        content TEXT NOT NULL
-                    );
-                """)
-                conn.commit()
-                logging.info("Table 'entries' created successfully or already exists.")
-        except Exception as e:
-            logging.error(f"Error creating table: {e}")
-        finally:
-            conn.close()
-    else:
-        logging.error("Connection to database failed, cannot create table.")
-
-create_table()
-
 @app.route("/", methods=["GET", "POST"])
 def index():
     conn = create_connection()
