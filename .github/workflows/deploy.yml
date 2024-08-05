@@ -1,54 +1,39 @@
-name: Deploy
+name: Deploy to ECR
 
 on:
+
   push:
-    branches:
-      - master
+    branches: [ master ]
 
 jobs:
-  build-and-deploy:
+
+  build:
+
+    name: Build Image
     runs-on: ubuntu-latest
 
-    steps:
-      # Checkout the repository
-      - name: Checkout code
-        uses: actions/checkout@v3
 
-      # Set up AWS CLI
-      - name: Set up AWS CLI
-        uses: aws-actions/configure-aws-credentials@v4
+    steps:
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Log in to Amazon ECR Public
-      - name: Log in to Amazon ECR Public
+      - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-        with:
-          registry: public.ecr.aws
-          mask-password: 'false'
+        uses: aws-actions/amazon-ecr-login@v1
 
-      # Build Docker image
-      - name: Build Docker image
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          IMAGE_TAG: docker
         run: |
-          docker build -t 192144932264.dkr.ecr.us-east-1.amazonaws.com .
-
-      # Tag Docker image
-      - name: Tag Docker image
-        run: |
-          docker tag  ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}
-
-      # Push Docker image to ECR
-      - name: Push Docker image to ECR
-        run: |
-          docker push 192144932264.dkr.ecr.us-east-1.amazonaws.com
-
-      # Deploy to EC2
-      - name: Deploy to EC2
-        run: |
-          ssh -i ${{ secrets.SSH_PRIVATE_KEY }} ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
-          docker pull ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
-          docker-compose up -d
-          EOF
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
