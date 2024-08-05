@@ -35,24 +35,24 @@ jobs:
           docker build -t docker:$IMAGE_TAG .
           
           # Tag the image for the ECR repository
-          docker tag docker:$IMAGE_TAG ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG
+          docker tag docker:$IMAGE_TAG ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$REPO_NAME:$IMAGE_TAG
           
           # Push the image to the ECR repository
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$REPO_NAME:$IMAGE_TAG
 
-      - name: Deploy to EC2 and run with Docker Compose
+      - name: Deploy to EC2
         run: |
           IMAGE_TAG=${{ github.sha }}
           ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ec2-user@${{ secrets.EC2_HOST }} << EOF
-            # Log in to ECR on the EC2 instance
+            # Log in to Amazon ECR
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
-          
-            # Pull the latest Docker image from ECR
-            docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG
-          
-            # Update the Docker Compose file with the new image tag
-            sed -i 's|image: .*|image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG|g' docker-compose.yml
-          
-            # Start the Docker Compose stack
-            docker-compose up -d
+
+            # Update the image tag in the docker-compose.yml file
+            sed -i 's|image: .*|image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$REPO_NAME:$IMAGE_TAG|' /path/to/your/docker-compose.yml
+
+            # Pull the latest image
+            docker-compose -f /path/to/your/docker-compose.yml pull
+
+            # Bring up the services
+            docker-compose -f /path/to/your/docker-compose.yml up -d
           EOF
