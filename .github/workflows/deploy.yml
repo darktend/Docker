@@ -48,7 +48,7 @@ jobs:
 
       - name: Deploy to EC2 and run with Docker Compose
         env:
-          IMAGE_TAG=latest
+          IMAGE_TAG: latest
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/ssh_key
           chmod 600 /tmp/ssh_key
