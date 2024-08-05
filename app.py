@@ -63,7 +63,7 @@ create_table()
 def index():
     conn = create_connection()
     if not conn:
-        return "Error: Unable to connect to the database,bad(", 500
+        return "Errors Unable to connect to the database,bad(", 500
 
     if request.method == "POST":
         content = request.form["content"]
