@@ -44,7 +44,7 @@ jobs:
         env:
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          ssh -v -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey -i <(echo "${{ secrets.SSH_PRIVATE_KEY }}") ec2-user@${{ secrets.EC2_HOST }} << EOF
+         ssh -o StrictHostKeyChecking=no -i <(echo "${{ secrets.SSH_PRIVATE_KEY }}") ec2-user@${{ secrets.EC2_HOST }} << EOF
             echo "Logged into EC2 instance"
             # Log in to ECR on the EC2 instance
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
