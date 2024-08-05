@@ -11,7 +11,8 @@ services:
     depends_on:
       - db
     env_file:
-      - .env
+      - ${{ secrets.ENV_FILE }}
+
     volumes:
       - .:/app
     deploy:
@@ -26,7 +27,7 @@ services:
   db:
     image: postgres:13
     env_file:
-      - .env
+      - ${{ secrets.ENV_FILE }}
     ports:
       - "5432:5432"
     volumes:
