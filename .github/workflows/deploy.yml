@@ -39,7 +39,6 @@ jobs:
           
           # Push the image to the ECR repository
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG
-
       - name: Deploy to EC2 and run with Docker Compose
         env:
           IMAGE_TAG: ${{ github.sha }}
