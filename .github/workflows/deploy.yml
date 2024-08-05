@@ -39,3 +39,20 @@ jobs:
           
           # Push the image to the ECR repository
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG
+
+      - name: Deploy to EC2 and run with Docker Compose
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ec2-user@${{ secrets.EC2_HOST }} << EOF
+            # Log in to ECR on the EC2 instance
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+          
+            # Pull the latest Docker image from ECR
+            docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG
+          
+            # Update the Docker Compose file with the new image tag
+            sed -i 's|image: .*|image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG|g' docker-compose.yml
+          
+            # Start the Docker Compose stack
+            docker-compose up -d
+          EOF
