@@ -1,8 +1,5 @@
 services:
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
     image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/docker:${IMAGE_TAG}
     ports:
       - "80:80"
