@@ -82,12 +82,12 @@ def index():
     html = """
     <!doctype html>
     <title>Flask PostgreSQL App</title>
-    <h1>Enter data!!!</h1>
+    <h1>Enter data</h1>
     <form method=post>
       <input type=text name=content>
       <input type=submit value=Submit>
     </form>
-    <h2>Entries!</h2>
+    <h2>Entries!@#</h2>
     <ul>
       {% for entry in entries %}
         <li>{{ entry[1] }}</li>
