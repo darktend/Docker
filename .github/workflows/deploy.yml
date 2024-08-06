@@ -41,33 +41,42 @@ jobs:
           docker build -t docker:$IMAGE_TAG .
           
           # Tag the image for the ECR repository
-          docker tag docker:$IMAGE_TAG ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG
+          docker tag docker:$IMAGE_TAG ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$REPO_NAME:$IMAGE_TAG
           
           # Push the image to the ECR repository
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$REPO_NAME:$IMAGE_TAG
 
       - name: Deploy to EC2 and run with Docker Compose
         env:
           IMAGE_TAG: ${{ github.sha }}
+          REPO_NAME: ${{ secrets.ECR_REPOSITORY }}
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/ssh_key
           chmod 600 /tmp/ssh_key
           ssh -o StrictHostKeyChecking=no -i /tmp/ssh_key ec2-user@${{ secrets.EC2_HOST }} << EOF
             echo "Logged into EC2 instance"
             cd /home/ec2-user/Docker/ # Перехід у каталог проекту
+
             # Log in to ECR on the EC2 instance
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
           
             # Pull the latest Docker image from ECR
-            docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG
+            docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$REPO_NAME:$IMAGE_TAG
           
             # Update the Docker Compose file with the new image tag only for the web service
-            sed -i '/web:/,/image:/s|image: .*|image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG|g' docker-compose.yml
+            sed -i '/image:/s|image: .*|image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/$REPO_NAME:$IMAGE_TAG|g' docker-compose.yml
           
             # Stop the Docker Compose stack
             docker-compose down
+          
+            # Remove old unused Docker images
+            docker image prune -f
+
             # Start the Docker Compose stack
-            docker-compose up -d --build web
+            docker-compose up -d --build
+          
+            # Optionally, show the logs for the web service (useful for debugging)
+            docker-compose logs -t --tail=100 web
           EOF
           
           # Clean up the SSH key
