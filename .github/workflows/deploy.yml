@@ -54,20 +54,25 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i /tmp/ssh_key ec2-user@${{ secrets.EC2_HOST }} << EOF
             echo "Logged into EC2 instance"
             cd /home/ec2-user/Docker/ # Перехід у каталог проекту
+
+            # Pull the latest changes from the repository
+            git pull origin master
+
             # Log in to ECR on the EC2 instance
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
-          
+
             # Pull the latest Docker image from ECR
             docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG
-          
+
             # Update the Docker Compose file with the new image tag only for the web service
             sed -i '/web:/,/image:/s|image: .*|image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/docker:$IMAGE_TAG|g' docker-compose.yml
-          
-          # Stop the Docker Compose stack
-          docker-compose down
+
+            # Stop the Docker Compose stack
+            docker-compose down
+
             # Start the Docker Compose stack
             docker-compose up -d
           EOF
-          
+
           # Clean up the SSH key
           rm /tmp/ssh_key
