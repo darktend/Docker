@@ -87,7 +87,8 @@ def index():
       <input type=text name=content>
       <input type=submit value=Submit>
     </form>
-    <h2>Entries update compose!AWS</h2>
+    <h1>Egor I have completed this task give the following</h1>
+    <h2>Entries</h2>
     <ul>
       {% for entry in entries %}
         <li>{{ entry[1] }}</li>
