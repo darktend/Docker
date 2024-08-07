@@ -87,8 +87,7 @@ def index():
       <input type=text name=content>
       <input type=submit value=Submit>
     </form>
-    <h2>Entries</h2>
-    <p>I change this AWS DEPLOY!!!</p>
+    <h2>Entries AWS li</h2>
     <ul>
       {% for entry in entries %}
         <li>{{ entry[1] }}</li>
