@@ -19,7 +19,7 @@ services:
         order: start-first
 
   db:
-    image: postgres:13
+    image: "postgres:13"
     env_file:
       - .env
     ports:
