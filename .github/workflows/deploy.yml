@@ -59,9 +59,18 @@ jobs:
             # Change to the project directory
             cd /home/ec2-user/Docker/
           
+            # Stash local changes (optional)
+            git stash
+          
+            # Or force reset to discard local changes (alternative)
+            # git reset --hard
+          
             # Pull the latest changes from the repository
             git pull origin master
-
+          
+            # Apply stashed changes (if you used stash)
+            git stash pop || true
+          
             # Log in to ECR on the EC2 instance
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
           
@@ -76,7 +85,7 @@ jobs:
           
             # Remove old unused Docker images
             docker image prune -f
-
+          
             # Start the Docker Compose stack
             docker-compose up -d --build
           
