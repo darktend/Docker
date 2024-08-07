@@ -2,7 +2,7 @@
 
 services:
   web:
-    image: 192144932264.dkr.ecr.us-east-1.amazonaws.com/docker:507a7a5ab7615fff9da7f1fea8cedc708418149c
+    image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/docker:${IMAGE_TAG}
     ports:
       - "80:80"
     depends_on:
